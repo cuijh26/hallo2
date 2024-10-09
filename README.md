@@ -1,3 +1,3 @@
-# Hallo2: Long-Duration and High-Resolution Audio-driven Portrait Image Animation
+<h1 align='center'>Hallo2: Long-Duration and High-Resolution Audio-driven Portrait Image Animation</h1>
 
-This repo is the home page of [Hallo2](https://github.com/fudan-generative-vision/hallo).
+## Comming Soon
