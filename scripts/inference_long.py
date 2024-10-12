@@ -448,7 +448,7 @@ def inference_process(args: argparse.Namespace):
 
         tensor_result.append(pipeline_output.videos)
 
-        if (t+1) % batch_size == 0:
+        if (t+1) % batch_size == 0 or (t+1)==times:
             last_motion_frame = [tensor_result[-1]]
 
             if start!=0:
@@ -465,6 +465,8 @@ def inference_process(args: argparse.Namespace):
             output_file = os.path.join(save_seg_path, f"{name}-{t+1:06}.mp4")
 
             tensor_to_video_batch(tensor_result, output_file, start, driving_audio_path)
+            del tensor_result
+
             tensor_result = last_motion_frame
             audio_length -= length
             start += length
