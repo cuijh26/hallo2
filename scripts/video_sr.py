@@ -284,7 +284,6 @@ if __name__ == '__main__':
                 save_restore_path = os.path.join(result_root, 'final_results', f'{basename}_{kk}.png')
                 imwrite(restored_img, save_restore_path)
 
-
     # save enhanced video
     if input_video:
         print('Video Saving...')
@@ -292,21 +291,23 @@ if __name__ == '__main__':
         video_frames = []
         img_list = sorted(glob.glob(os.path.join(result_root, 'final_results', '*.[jp][pn]g')))
 
-        assert len(img_list)==length
+        assert len(img_list)==length, print(len(img_list), length)
 
-        for img_path in img_list:
-            print(img_path)
-            img = cv2.imread(img_path)
-            video_frames.append(img)
         # write images to video
-        height, width = video_frames[0].shape[:2]
+        sample_img = cv2.imread(img_list[0])
+        height, width = sample_img.shape[:2]
+
         if args.suffix is not None:
             video_name = f'{video_name}_{args.suffix}.png'
         save_restore_path = os.path.join(result_root, f'{video_name}.mp4')
+
         vidwriter = VideoWriter(save_restore_path, height, width, fps, audio)
          
-        for f in video_frames:
-            vidwriter.write_frame(f)
+        for img_path in img_list:
+            print(img_path)
+            img = cv2.imread(img_path)
+            vidwriter.write_frame(img)
+
         vidwriter.close()
 
     print(f'\nAll results are saved in {result_root}')
