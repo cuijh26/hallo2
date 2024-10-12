@@ -136,7 +136,7 @@ def save_image_batch(image_tensor, save_path):
         image = Image.fromarray(img_array)
         image.save(os.path.join(save_path, f'motion_frame_{i}.png'))
 
-def cut_audio(audio_path, save_dir, length=5):
+def cut_audio(audio_path, save_dir, length=60):
     audio = AudioSegment.from_wav(audio_path)
 
     segment_length = length * 1000 # pydub使用毫秒
@@ -369,7 +369,7 @@ def inference_process(args: argparse.Namespace):
 
     generator = torch.manual_seed(42)
 
-    batch_size = 4
+    batch_size = 60
     start = 0
 
     for t in range(times):
