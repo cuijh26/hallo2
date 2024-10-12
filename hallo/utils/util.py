@@ -78,6 +78,7 @@ import torch
 import torchvision
 from einops import rearrange
 from moviepy.editor import AudioFileClip, VideoClip
+from moviepy.editor import VideoFileClip, concatenate_videoclips
 from PIL import Image
 
 
@@ -341,9 +342,28 @@ def tensor_to_video_batch(tensor, output_video_file, start, audio_source, fps=25
         frame_index = min(int(t * fps), tensor.shape[0] - 1)
         return tensor[frame_index]
     new_video_clip = VideoClip(make_frame, duration=tensor.shape[0] / fps)
-    audio_clip = AudioFileClip(audio_source).subclip(start, start + tensor.shape[0] / fps)
+    audio_clip = AudioFileClip(audio_source).subclip(start / fps, (start + tensor.shape[0]) / fps)
     new_video_clip = new_video_clip.set_audio(audio_clip)
     new_video_clip.write_videofile(output_video_file, fps=fps, audio_codec='aac')
+
+def merge_videos(input_directory, output_file):
+    video_files = [f for f in os.listdir(input_directory) if f.endswith('.mp4')]
+    
+    video_files.sort()  
+
+    clips = []
+    
+    for video_file in video_files:
+        file_path = os.path.join(input_directory, video_file)
+        clip = VideoFileClip(file_path)
+        clips.append(clip)
+
+    final_clip = concatenate_videoclips(clips)
+
+    final_clip.write_videofile(output_file, codec="libx264")
+
+    for clip in clips:
+        clip.close()
 
 
 silhouette_ids = [

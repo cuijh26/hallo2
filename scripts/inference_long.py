@@ -53,7 +53,7 @@ from hallo.models.image_proj import ImageProjModel
 from hallo.models.unet_2d_condition import UNet2DConditionModel
 from hallo.models.unet_3d import UNet3DConditionModel
 from hallo.utils.config import filter_non_none
-from hallo.utils.util import tensor_to_video
+from hallo.utils.util import tensor_to_video_batch, merge_videos
 
 
 class Net(nn.Module):
@@ -136,10 +136,10 @@ def save_image_batch(image_tensor, save_path):
         image = Image.fromarray(img_array)
         image.save(os.path.join(save_path, f'motion_frame_{i}.png'))
 
-def cut_audio(audio_path, save_dir):
+def cut_audio(audio_path, save_dir, length=5):
     audio = AudioSegment.from_wav(audio_path)
 
-    segment_length = 60 * 1000 * 10 # pydub使用毫秒
+    segment_length = length * 1000 # pydub使用毫秒
 
     num_segments = len(audio) // segment_length + (1 if len(audio) % segment_length != 0 else 0)
 
@@ -177,10 +177,14 @@ def inference_process(args: argparse.Namespace):
     driving_audio_path = config.driving_audio
 
     save_path = os.path.join(config.save_path, Path(source_image_path).stem)
+    save_seg_path = os.path.join(save_path, "seg_video")
     print("save path: ", save_path)
     
     if not os.path.exists(save_path):
         os.makedirs(save_path)
+    if not os.path.exists(save_seg_path):
+        os.makedirs(save_seg_path)
+
     motion_scale = [config.pose_weight, config.face_weight, config.lip_weight]
 
     # 2. runtime variables
@@ -221,7 +225,7 @@ def inference_process(args: argparse.Namespace):
     
     if config.use_cut:
         audio_list = cut_audio(driving_audio_path, os.path.join(
-            Path(driving_audio_path).parent, f"seg-long-{Path(driving_audio_path).stem}"))
+            save_path, f"seg-long-{Path(driving_audio_path).stem}"))
 
         audio_emb_list = []
         l = 0
@@ -365,6 +369,9 @@ def inference_process(args: argparse.Namespace):
 
     generator = torch.manual_seed(42)
 
+    batch_size = 4
+    start = 0
+
     for t in range(times):
         print(f"[{t+1}/{times}]")
 
@@ -441,14 +448,28 @@ def inference_process(args: argparse.Namespace):
 
         tensor_result.append(pipeline_output.videos)
 
-    tensor_result = torch.cat(tensor_result, dim=2)
-    tensor_result = tensor_result.squeeze(0)
-    tensor_result = tensor_result[:, :audio_length]
+        if (t+1) % batch_size == 0:
+            last_motion_frame = [tensor_result[-1]]
 
-    name = Path(save_path).name
-    output_file = os.path.join(save_path, f"{name}.mp4")
-    # save the result after all iteration
-    tensor_to_video(tensor_result, output_file, driving_audio_path)
+            if start!=0:
+                tensor_result = torch.cat(tensor_result[1:], dim=2)
+            else:
+                tensor_result = torch.cat(tensor_result, dim=2)
+            
+            tensor_result = tensor_result.squeeze(0)
+            f = tensor_result.shape[1]
+            length = min(f, audio_length)
+            tensor_result = tensor_result[:, :length]
+
+            name = Path(save_path).name
+            output_file = os.path.join(save_seg_path, f"{name}-{t+1:06}.mp4")
+
+            tensor_to_video_batch(tensor_result, output_file, start, driving_audio_path)
+            tensor_result = last_motion_frame
+            audio_length -= length
+            start += length
+    
+    return save_seg_path
     
 
 
@@ -479,4 +500,5 @@ if __name__ == "__main__":
 
     
 
-    inference_process(command_line_args)
+    save_path = inference_process(command_line_args)
+    merge_videos(save_path, os.path.join(save_path, "merge_video.mp4"))
