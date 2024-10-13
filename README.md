@@ -1,5 +1,27 @@
 <h1 align='center'>Hallo2: Long-Duration and High-Resolution Audio-driven Portrait Image Animation</h1>
 
+## ⚙️ Installation
+
+- System requirement: Ubuntu 20.04/Ubuntu 22.04, Cuda 12.1
+- Tested GPUs: A100
+
+Create conda environment:
+
+```bash
+  conda create -n hallo python=3.10
+  conda activate hallo
+```
+
+Install packages with `pip`
+
+```bash
+  pip install -r requirements.txt
+```
+
+Besides, ffmpeg is also needed:
+```bash
+  apt-get install ffmpeg
+```
 
 ### 📥 Download Pretrained Models
 
