@@ -1,3 +1,9 @@
+"""
+Modified from [CodeFormer](https://github.com/sczhou/CodeFormer).
+When using or redistributing this feature, please comply with the [S-Lab License 1.0](https://github.com/sczhou/CodeFormer?tab=License-1-ov-file).
+We kindly request that you respect the terms of this license in any usage or redistribution of this component.
+"""
+
 import os
 import cv2
 import argparse
