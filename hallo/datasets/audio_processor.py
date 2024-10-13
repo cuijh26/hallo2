@@ -73,7 +73,10 @@ class AudioProcessor:
         self.wav2vec_feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(wav2vec_model_path, local_files_only=True)
 
 
-    def preprocess(self, wav_file: str, clip_length: int=-1):
+    def preprocess(self, wav_file: str, 
+                   clip_length: int=-1, 
+                   padding=False,
+                   processed_length=0):
         """
         Preprocess a WAV audio file by separating the vocals from the background and resampling it to a 16 kHz sample rate.
         The separated vocal track is then converted into wav2vec2 for further processing or analysis.
@@ -110,9 +113,11 @@ class AudioProcessor:
 
         audio_feature = torch.from_numpy(audio_feature).float().to(device=self.device)
 
-        if clip_length>0 and seq_len % clip_length != 0:
-            audio_feature = torch.nn.functional.pad(audio_feature, (0, (clip_length - seq_len % clip_length) * (self.sample_rate // self.fps)), 'constant', 0.0)
-            seq_len += clip_length - seq_len % clip_length
+        if padding:
+            if clip_length>0 and seq_len % clip_length != 0:
+                all_len = seq_len + processed_length
+                audio_feature = torch.nn.functional.pad(audio_feature, (0, (clip_length - all_len % clip_length) * (self.sample_rate // self.fps)), 'constant', 0.0)
+                seq_len += clip_length - all_len % clip_length
         audio_feature = audio_feature.unsqueeze(0)
 
         with torch.no_grad():

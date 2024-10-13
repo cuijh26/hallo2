@@ -55,6 +55,7 @@ from hallo.models.unet_3d import UNet3DConditionModel
 from hallo.utils.config import filter_non_none
 from hallo.utils.util import tensor_to_video_batch, merge_videos
 
+from icecream import ic
 
 class Net(nn.Module):
     """
@@ -240,9 +241,11 @@ def inference_process(args: argparse.Namespace):
                 os.path.basename(audio_separator_model_file),
                 os.path.join(save_path, "audio_preprocess")
             )
-
-        for audio_path in audio_list:
-            emb, length = audio_processor.preprocess(audio_path, clip_length)
+        
+        for idx, audio_path in enumerate(audio_list):
+            padding = (idx+1) == len(audio_list)
+            emb, length = audio_processor.preprocess(audio_path, clip_length, 
+                                                     padding=padding, processed_length=l)
             audio_emb_list.append(emb)
             l += length
         
@@ -370,7 +373,9 @@ def inference_process(args: argparse.Namespace):
 
     generator = torch.manual_seed(42)
 
-    batch_size = 60
+    ic(audio_emb.shape)
+    ic(audio_length)    
+    batch_size = 10
     start = 0
 
     for t in range(times):
@@ -440,10 +445,12 @@ def inference_process(args: argparse.Namespace):
             motion_scale=motion_scale,
         )
 
+        ic(pipeline_output.videos.shape)
         tensor_result.append(pipeline_output.videos)
 
         if (t+1) % batch_size == 0 or (t+1)==times:
             last_motion_frame = [tensor_result[-1]]
+            ic(len(tensor_result))
 
             if start!=0:
                 tensor_result = torch.cat(tensor_result[1:], dim=2)
@@ -454,6 +461,10 @@ def inference_process(args: argparse.Namespace):
             f = tensor_result.shape[1]
             length = min(f, audio_length)
             tensor_result = tensor_result[:, :length]
+
+            ic(tensor_result.shape)
+            ic(start)
+            ic(audio_length)
 
             name = Path(save_path).name
             output_file = os.path.join(save_seg_path, f"{name}-{t+1:06}.mp4")
