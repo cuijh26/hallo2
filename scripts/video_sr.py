@@ -16,11 +16,7 @@ from facelib.utils.face_restoration_helper import FaceRestoreHelper
 from facelib.utils.misc import is_gray
 
 from basicsr.utils.registry import ARCH_REGISTRY
-# from icecream import ic
 
-# pretrain_model_url = {
-#     'restoration': 'https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth',
-# }
 
 def set_realesrgan():
     from basicsr.archs.rrdbnet_arch import RRDBNet
@@ -66,10 +62,9 @@ if __name__ == '__main__':
     device = get_device()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-i', '--input_path', type=str, default='./inputs/whole_imgs', 
-            help='Input image, video or folder. Default: inputs/whole_imgs')
+    parser.add_argument('-i', '--input_path', type=str, help='Input video')
     parser.add_argument('-o', '--output_path', type=str, default=None, 
-            help='Output folder. Default: results/<input_name>_<w>')
+            help='Output folder')
     parser.add_argument('-w', '--fidelity_weight', type=float, default=0.5, 
             help='Balance the quality and fidelity. Default: 0.5')
     parser.add_argument('-s', '--upscale', type=int, default=2, 
@@ -80,14 +75,13 @@ if __name__ == '__main__':
     # large det_model: 'YOLOv5l', 'retinaface_resnet50'
     # small det_model: 'YOLOv5n', 'retinaface_mobile0.25'
     parser.add_argument('--detection_model', type=str, default='retinaface_resnet50', 
-            help='Face detector. Optional: retinaface_resnet50, retinaface_mobile0.25, YOLOv5l, YOLOv5n, dlib. \
+            help='Face detector. Optional: retinaface_resnet50, retinaface_mobile0.25, YOLOv5l, YOLOv5n. \
                 Default: retinaface_resnet50')
     parser.add_argument('--bg_upsampler', type=str, default='None', help='Background upsampler. Optional: realesrgan')
     parser.add_argument('--face_upsample', action='store_true', help='Face upsampler after enhancement. Default: False')
     parser.add_argument('--bg_tile', type=int, default=400, help='Tile size for background sampler. Default: 400')
     parser.add_argument('--suffix', type=str, default=None, help='Suffix of the restored faces. Default: None')
-    parser.add_argument('--save_video_fps', type=float, default=None, help='Frame rate for saving video. Default: None')
-
+    
     args = parser.parse_args()
 
     # ------------------------ input & output ------------------------
@@ -102,7 +96,7 @@ if __name__ == '__main__':
             input_img_list.append(image)
             image = vidreader.get_frame()
         audio = vidreader.get_audio()
-        fps = vidreader.get_fps() if args.save_video_fps is None else args.save_video_fps   
+        fps = vidreader.get_fps()    
         video_name = os.path.basename(args.input_path)[:-4]
         result_root = f'./hq_results/{video_name}_{w}_{args.upscale}'
         input_video = True
@@ -137,7 +131,7 @@ if __name__ == '__main__':
     net = ARCH_REGISTRY.get('CodeFormer')(dim_embd=512, codebook_size=1024, n_head=8, n_layers=9, 
                                             connect_list=['32', '64', '128', '256']).to(device)
     
-    ckpt_path = '/cpfs01/projects-HDD/cfff-6f3a36a0cd1e_HDD/public/Hallo/workspace/cuijh/CodeFormer/experiments/20240918_131413_CodeFormer_temp/models/net_g_75000.pth'
+    ckpt_path = './pretrained_models/hallo2/net_g.pth'
     
     checkpoint = torch.load(ckpt_path)['params_ema']
     m, n = net.load_state_dict(checkpoint, strict=False)
@@ -271,9 +265,7 @@ if __name__ == '__main__':
         
         if i!=0:
             restored_img_list = restored_img_list[overlay:]
-            top_idx = top_idx[overlay:]
         
-        id_list.append(top_idx.detach().cpu())
 
         # save restored img
         if not args.has_aligned and len(restored_img_list)!=0:

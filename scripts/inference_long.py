@@ -136,6 +136,7 @@ def save_image_batch(image_tensor, save_path):
         image = Image.fromarray(img_array)
         image.save(os.path.join(save_path, f'motion_frame_{i}.png'))
 
+
 def cut_audio(audio_path, save_dir, length=60):
     audio = AudioSegment.from_wav(audio_path)
 
@@ -324,12 +325,12 @@ def inference_process(args: argparse.Namespace):
 
     m,u = net.load_state_dict(
         torch.load(
-            os.path.join(audio_ckpt_dir, f"net-{config.step}.pth"),
+            os.path.join(audio_ckpt_dir, f"net.pth"),
             map_location="cpu",
         ),
     )
     assert len(m) == 0 and len(u) == 0, "Fail to load correct checkpoint."
-    print("loaded weight from ", os.path.join(audio_ckpt_dir, f"net-{config.step}.pth"))
+    print("loaded weight from ", os.path.join(audio_ckpt_dir, "net.pth"))
 
     # 5. inference
     pipeline = FaceAnimatePipeline(
@@ -396,30 +397,23 @@ def inference_process(args: argparse.Namespace):
         pixel_values_ref_img = pixel_values_ref_img.unsqueeze(0)
 
         pixel_motion_values = pixel_values_ref_img[:, 1:]
-        print("use mask: ", config.use_mask)
-        if config.use_mask:
-            # pixel_motion_values = pixel_values_ref_img[:, 1:]
 
+        if config.use_mask:
             b, f, c, h, w = pixel_motion_values.shape
             rand_mask = torch.rand(h, w)
             mask = rand_mask > config.mask_rate
             mask = mask.unsqueeze(0).unsqueeze(0).unsqueeze(0)  
             mask = mask.expand(b, f, c, h, w)  
 
-            print("without mask face: ", config.wo_mask_face)
-            if config.wo_mask_face:
-                face_mask = source_image_face_region.repeat(f, 1, 1, 1).unsqueeze(0)
-                assert face_mask.shape == mask.shape
-                mask = mask | face_mask.bool()
+            face_mask = source_image_face_region.repeat(f, 1, 1, 1).unsqueeze(0)
+            assert face_mask.shape == mask.shape
+            mask = mask | face_mask.bool()
 
             pixel_motion_values = pixel_motion_values * mask
             pixel_values_ref_img[:, 1:] = pixel_motion_values
 
         
         assert pixel_motion_values.shape[0] == 1
-        pixel_motion_values = pixel_motion_values.squeeze(0)
-        motion_save_path = os.path.join(save_path, f"{t}")
-        save_image_batch(pixel_motion_values, motion_save_path)
 
         audio_tensor = audio_emb[
             t * clip_length: min((t + 1) * clip_length, audio_emb.shape[0])
@@ -485,8 +479,6 @@ if __name__ == "__main__":
     parser.add_argument("--driving_audio", type=str, required=False,
                         help="driving audio")
     parser.add_argument(
-        "--output", type=str, help="output video file name", default=".cache/output.mp4")
-    parser.add_argument(
         "--pose_weight", type=float, help="weight of pose", required=False)
     parser.add_argument(
         "--face_weight", type=float, help="weight of face", required=False)
@@ -503,4 +495,4 @@ if __name__ == "__main__":
     
 
     save_path = inference_process(command_line_args)
-    merge_videos(save_path, os.path.join(save_path, "merge_video.mp4"))
+    merge_videos(save_path, os.path.join(Path(save_path).parent, "merge_video.mp4"))

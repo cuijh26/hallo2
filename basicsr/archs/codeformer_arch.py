@@ -131,8 +131,8 @@ class TransformerSALayer(nn.Module):
     def forward(self, tgt, video_length, batch_size,
                 tgt_mask: Optional[Tensor] = None,
                 tgt_key_padding_mask: Optional[Tensor] = None,
-                query_pos: Optional[Tensor] = None,
-                use_temporal=True):
+                query_pos: Optional[Tensor] = None
+                ):
         
         # self attention
         tgt2 = self.norm1(tgt)
@@ -146,21 +146,20 @@ class TransformerSALayer(nn.Module):
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt2))))
         tgt = tgt + self.dropout2(tgt2)
 
-        if use_temporal:
-            # tmp attn
-            tgt = rearrange(tgt, "d (b f) c -> f (b d) c", f=video_length)
-            tgt2 = self.temp_norm(tgt)
-            query_pos = rearrange(query_pos, "d (b f) c -> f (b d) c", f=video_length)
-            q = k = self.with_pos_embed(tgt2, query_pos)
-            tgt2 = self.temp_attn(q, k, value=tgt2, attn_mask=tgt_mask,
-                                key_padding_mask=tgt_key_padding_mask)[0]
-            tgt = tgt + self.temp_dropout(tgt2)
-            tgt = rearrange(tgt, "f (b d) c -> d (b f) c", b=batch_size)
+        # tmp attn
+        tgt = rearrange(tgt, "d (b f) c -> f (b d) c", f=video_length)
+        tgt2 = self.temp_norm(tgt)
+        query_pos = rearrange(query_pos, "d (b f) c -> f (b d) c", f=video_length)
+        q = k = self.with_pos_embed(tgt2, query_pos)
+        tgt2 = self.temp_attn(q, k, value=tgt2, attn_mask=tgt_mask,
+                            key_padding_mask=tgt_key_padding_mask)[0]
+        tgt = tgt + self.temp_dropout(tgt2)
+        tgt = rearrange(tgt, "f (b d) c -> d (b f) c", b=batch_size)
 
-            # ffn
-            tgt2 = self.temp_ffn_norm(tgt)
-            tgt2 = self.temp_linear2(self.temp_ffn_dropout(self.activation(self.temp_linear1(tgt2))))
-            tgt = tgt + self.temp_ffn_dropout(tgt2)
+        # ffn
+        tgt2 = self.temp_ffn_norm(tgt)
+        tgt2 = self.temp_linear2(self.temp_ffn_dropout(self.activation(self.temp_linear1(tgt2))))
+        tgt = tgt + self.temp_ffn_dropout(tgt2)
 
         return tgt
 
@@ -309,7 +308,7 @@ class CodeFormer(VQAutoEncoder):
         return out, logits, lq_feat
 
 
-    def inference(self, x, w=0, detach_16=True, adain=False, use_temporal=True):
+    def inference(self, x, w=0, detach_16=True, adain=False):
         with torch.no_grad():
             b, f, _, _, _ = x.shape
             x = rearrange(x, "b f c h w -> (b f) c h w")
@@ -328,8 +327,7 @@ class CodeFormer(VQAutoEncoder):
             query_emb = feat_emb
             # Transformer encoder
             for layer in self.ft_layers:
-                query_emb = layer(query_emb, query_pos=pos_emb, video_length=f, batch_size=b,
-                                  use_temporal=use_temporal)
+                query_emb = layer(query_emb, query_pos=pos_emb, video_length=f, batch_size=b)
 
             # output logits
             logits = self.idx_pred_layer(query_emb) # (hw)bn
