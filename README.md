@@ -1,8 +1,43 @@
 <h1 align='center'>Hallo2: Long-Duration and High-Resolution Audio-driven Portrait Image Animation</h1>
 
+
+<div align='center'>
+    <a href='https://github.com/cuijh26' target='_blank'>Jiahao Cui</a><sup>1*</sup>&emsp;
+    <a href='https://github.com/crystallee-ai' target='_blank'>Hui Li</a><sup>1*</sup>&emsp;
+    <a href='https://yoyo000.github.io/' target='_blank'>Yao Yao</a><sup>3</sup>&emsp;
+    <a href='http://zhuhao.cc/home/' target='_blank'>Hao Zhu</a><sup>3</sup>&emsp;
+    <a href='https://github.com/NinoNeumann' target='_blank'>Hanlin Shang</a><sup>1</sup>&emsp;
+    <a href='https://github.com/Kaihui-Cheng' target='_blank'>Kaihui Cheng</a><sup>1</sup>&emsp;
+    <a href='' target='_blank'>Hang Zhou</a><sup>2</sup>&emsp;
+</div>
+<div align='center'>
+    <a href='https://sites.google.com/site/zhusiyucs/home' target='_blank'>Siyu Zhu</a><sup>1✉️</sup>&emsp;
+    <a href='https://jingdongwang2017.github.io/' target='_blank'>Jingdong Wang</a><sup>2</sup>&emsp;
+</div>
+
+<div align='center'>
+    <sup>1</sup>Fudan University&emsp; <sup>2</sup>Baidu Inc&emsp; <sup>3</sup>Nanjing University
+</div>
+
+<br>
+<div align='center'>
+    <a href='https://github.com/fudan-generative-vision/hallo2'><img src='https://img.shields.io/github/stars/fudan-generative-vision/hallo2?style=social'></a>
+    <a href='https://fudan-generative-vision.github.io/hallo2/#/'><img src='https://img.shields.io/badge/Project-HomePage-Green'></a>
+    <a href='https://arxiv.org/abs/2410.07718'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
+    <a href='https://huggingface.co/fudan-generative-ai/hallo2'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20HuggingFace-Model-yellow'></a>
+    <a href='https://www.modelscope.cn/models/fudan-generative-vision/hallo2/summary'><img src='https://img.shields.io/badge/Modelscope-Model-purple'></a>
+    <a href='assets/wechat.jpeg'><img src='https://badges.aleen42.com/src/wechat.svg'></a>
+</div>
+<br>
+
+
+> This repo is based on [Hallo](https://github.com/fudan-generative-vision/hallo).
+> 
+> We have made significant improvements(**High-Resolution** and **Long-Duration**) to the original model architecture and training pipeline.
+
 ## ⚙️ Installation
 
-- System requirement: Ubuntu 20.04/Ubuntu 22.04, Cuda 12.1
+- System requirement: Ubuntu 20.04/Ubuntu 22.04, Cuda 11.8
 - Tested GPUs: A100
 
 Create conda environment:
@@ -152,7 +187,7 @@ options:
 ```
 
 #### High-Resolution animation
-Simply to run the `scripts/video_sr.py` and pass `input_path` and `output_path`:
+Simply to run the `scripts/video_sr.py` and pass `input_video` and `output_path`:
 
 ```bash
 python scripts/video_sr.py --input_path [input_video] --output_path [output_dir] --bg_upsampler realesrgan --face_upsample -w 1 -s 4
@@ -187,6 +222,8 @@ options:
   --bg_tile BG_TILE     Tile size for background sampler. Default: 400
   --suffix SUFFIX       Suffix of the restored faces. Default: None
 ```
+
+> NOTICE: The High-Resolution animation feature is a modified version of [CodeFormer](https://github.com/sczhou/CodeFormer). When using or redistributing this feature, please comply with the [S-Lab License 1.0](https://github.com/sczhou/CodeFormer?tab=License-1-ov-file). We kindly request that you respect the terms of this license in any usage or redistribution of this component.
 
 ## Training
 
@@ -300,3 +337,47 @@ python -m torch.distributed.launch --nproc_per_node=8 --master_port=4322 \
 basicsr/train.py -opt ./configs/train/video_sr.yaml \
 --launcher pytorch
 ```
+## 📝 Citation
+
+If you find our work useful for your research, please consider citing the paper:
+
+```
+@misc{cui2024hallo2,
+	title={Hallo2: Long-Duration and High-Resolution Audio-driven Portrait Image Animation}, 
+	author={Jiahao Cui and Hui Li and Yao Yao and Hao Zhu and Hanlin Shang and Kaihui Cheng and Hang Zhou and Siyu Zhu and️ Jingdong Wang},
+	year={2024},
+	eprint={2410.07718},
+	archivePrefix={arXiv},
+	primaryClass={cs.CV}
+}
+```
+
+## 🌟 Opportunities Available
+
+Multiple research positions are open at the **Generative Vision Lab, Fudan University**! Include:
+
+- Research assistant
+- Postdoctoral researcher
+- PhD candidate
+- Master students
+
+Interested individuals are encouraged to contact us at [siyuzhu@fudan.edu.cn](mailto://siyuzhu@fudan.edu.cn) for further information.
+
+## ⚠️ Social Risks and Mitigations
+
+The development of portrait image animation technologies driven by audio inputs poses social risks, such as the ethical implications of creating realistic portraits that could be misused for deepfakes. To mitigate these risks, it is crucial to establish ethical guidelines and responsible use practices. Privacy and consent concerns also arise from using individuals' images and voices. Addressing these involves transparent data usage policies, informed consent, and safeguarding privacy rights. By addressing these risks and implementing mitigations, the research aims to ensure the responsible and ethical development of this technology.
+
+## 🤗 Acknowledgements
+
+We would like to thank the contributors to the [magic-animate](https://github.com/magic-research/magic-animate), [AnimateDiff](https://github.com/guoyww/AnimateDiff), [ultimatevocalremovergui](https://github.com/Anjok07/ultimatevocalremovergui), [AniPortrait](https://github.com/Zejun-Yang/AniPortrait) and [Moore-AnimateAnyone](https://github.com/MooreThreads/Moore-AnimateAnyone) repositories, for their open research and exploration.
+
+If we missed any open-source projects or related articles, we would like to complement the acknowledgement of this specific work immediately.
+
+## 👏 Community Contributors
+
+Thank you to all the contributors who have helped to make this project better!
+
+<a href="https://github.com/fudan-generative-vision/hallo2/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=fudan-generative-vision/hallo2" />
+</a>
+
