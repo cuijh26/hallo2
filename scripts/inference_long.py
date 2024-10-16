@@ -375,7 +375,7 @@ def inference_process(args: argparse.Namespace):
 
     ic(audio_emb.shape)
     ic(audio_length)    
-    batch_size = 10
+    batch_size = 60
     start = 0
 
     for t in range(times):
