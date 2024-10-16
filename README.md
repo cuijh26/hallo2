@@ -1,6 +1,5 @@
 <h1 align='center'>Hallo2: Long-Duration and High-Resolution Audio-driven Portrait Image Animation</h1>
 
-
 <div align='center'>
     <a href='https://github.com/cuijh26' target='_blank'>Jiahao Cui</a><sup>1*</sup>&emsp;
     <a href='https://github.com/crystallee-ai' target='_blank'>Hui Li</a><sup>1*</sup>&emsp;
@@ -25,15 +24,27 @@
     <a href='https://fudan-generative-vision.github.io/hallo2/#/'><img src='https://img.shields.io/badge/Project-HomePage-Green'></a>
     <a href='https://arxiv.org/abs/2410.07718'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
     <a href='https://huggingface.co/fudan-generative-ai/hallo2'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20HuggingFace-Model-yellow'></a>
-    <a href='https://www.modelscope.cn/models/fudan-generative-vision/hallo2/summary'><img src='https://img.shields.io/badge/Modelscope-Model-purple'></a>
     <a href='assets/wechat.jpeg'><img src='https://badges.aleen42.com/src/wechat.svg'></a>
 </div>
 <br>
 
-
 > This repo is based on [Hallo](https://github.com/fudan-generative-vision/hallo).
-> 
+>
 > We have made significant improvements(**High-Resolution** and **Long-Duration**) to the original model architecture and training pipeline.
+
+## 📰 News
+
+- **`2024/10/16`**: ✨✨✨ Source code and pretrained weights released.
+- **`2024/10/10`**: 🎉🎉🎉 Paper submitted on [Arxiv](https://arxiv.org/abs/2410.07718).
+
+## 📸 Showcase
+
+Visit our [project page](https://fudan-generative-vision.github.io/hallo2/#/) to view more results.
+
+## 🔧️ Framework
+
+![abstract](assets/framework_1.jpg)
+![framework](assets/framework_2.jpg)
 
 ## ⚙️ Installation
 
@@ -55,6 +66,7 @@ Install packages with `pip`
 ```
 
 Besides, ffmpeg is also needed:
+
 ```bash
   apt-get install ffmpeg
 ```
@@ -72,8 +84,8 @@ git clone https://huggingface.co/fudan-generative-ai/hallo2 pretrained_models
 
 Or you can download them separately from their source repo:
 
-- [hallo](https://huggingface.co/fudan-generative-ai/hallo/tree/main/hallo2): Our checkpoints consist of denoising UNet, face locator, image & audio proj.
-- [audio_separator](https://huggingface.co/huangjackson/Kim_Vocal_2): Kim\_Vocal\_2 MDX-Net vocal removal model. (_Thanks to [KimberleyJensen](https://github.com/KimberleyJensen)_)
+- [hallo](https://huggingface.co/fudan-generative-ai/hallo2/tree/main/hallo2): Our checkpoints consist of denoising UNet, face locator, image & audio proj.
+- [audio_separator](https://huggingface.co/huangjackson/Kim_Vocal_2): Kim*Vocal_2 MDX-Net vocal removal model. (\_Thanks to [KimberleyJensen](https://github.com/KimberleyJensen)*)
 - [insightface](https://github.com/deepinsight/insightface/tree/master/python-package#model-zoo): 2D and 3D Face Analysis placed into `pretrained_models/face_analysis/models/`. (_Thanks to deepinsight_)
 - [face landmarker](https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task): Face detection & mesh model from [mediapipe](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker#models) placed into `pretrained_models/face_analysis/models`.
 - [motion module](https://github.com/guoyww/AnimateDiff/blob/main/README.md#202309-animatediff-v2): motion module from [AnimateDiff](https://github.com/guoyww/AnimateDiff). (_Thanks to [guoyww](https://github.com/guoyww)_).
@@ -154,14 +166,16 @@ For the driving audio:
 We have provided [some samples](examples/) for your reference.
 
 ### 🎮 Run Inference
+
 #### Long-Duration animation
+
 Simply to run the `scripts/inference_long.py` and change `source_image`, `driving_audio` and `save_path` in the config file:
 
 ```bash
 python scripts/inference_long.py --config ./configs/inference/long.yaml
 ```
 
-Animation results will be saved at `save_path`. You can find more examples for inference at [examples folder](https://github.com/fudan-generative-vision/hallo/tree/main/examples).
+Animation results will be saved at `save_path`. You can find more examples for inference at [examples folder](https://github.com/fudan-generative-vision/hallo2/tree/main/examples).
 
 For more options:
 
@@ -187,13 +201,14 @@ options:
 ```
 
 #### High-Resolution animation
+
 Simply to run the `scripts/video_sr.py` and pass `input_video` and `output_path`:
 
 ```bash
 python scripts/video_sr.py --input_path [input_video] --output_path [output_dir] --bg_upsampler realesrgan --face_upsample -w 1 -s 4
 ```
 
-Animation results will be saved at `output_dir`. 
+Animation results will be saved at `output_dir`.
 
 For more options:
 
@@ -206,7 +221,7 @@ options:
   -i INPUT_PATH, --input_path INPUT_PATH
                         Input video
   -o OUTPUT_PATH, --output_path OUTPUT_PATH
-                        Output folder. 
+                        Output folder.
   -w FIDELITY_WEIGHT, --fidelity_weight FIDELITY_WEIGHT
                         Balance the quality and fidelity. Default: 0.5
   -s UPSCALE, --upscale UPSCALE
@@ -228,6 +243,7 @@ options:
 ## Training
 
 ### Long-Duration animation
+
 #### prepare data for training
 
 The training data, which utilizes some talking-face videos similar to the source images used for inference, also needs to meet the following requirements:
@@ -237,7 +253,6 @@ The training data, which utilizes some talking-face videos similar to the source
 3. The face should be facing forward, with a rotation angle of less than 30° (no side profiles).
 
 Organize your raw videos into the following directory structure:
-
 
 ```text
 dataset_name/
@@ -271,7 +286,6 @@ Replace `path/to/dataset` with the path to the parent directory of `videos`, suc
 #### Training
 
 Update the data meta path settings in the configuration YAML files, `configs/train/stage1.yaml` and `configs/train/stage2_long.yaml`:
-
 
 ```yaml
 #stage1.yaml
@@ -326,24 +340,39 @@ For multi-node training, you need to manually run the command with different `ma
 For more settings, refer to the [Accelerate documentation](https://huggingface.co/docs/accelerate/en/index).
 
 ### High-Resolution animation
+
 #### Training
+
 ##### prepare data for training
+
 We use the VFHQ dataset for training, you can download from its [homepage](https://liangbinxie.github.io/projects/vfhq/). Then updata `dataroot_gt` in `./configs/train/video_sr.yaml`.
 
 #### training
+
 Start training with the following command:
+
 ```shell
 python -m torch.distributed.launch --nproc_per_node=8 --master_port=4322 \
 basicsr/train.py -opt ./configs/train/video_sr.yaml \
 --launcher pytorch
 ```
+
+## 📅️ Roadmap
+
+| Status | Milestone                                                                                    |    ETA     |
+| :----: | :------------------------------------------------------------------------------------------- | :--------: |
+|   ✅   | **[Paper submitted on Arixiv](https://arxiv.org/abs/2410.07718)**                            | 2024-10-10 |
+|   ✅   | **[Source code meet everyone on GitHub](https://github.com/fudan-generative-vision/hallo2)** | 2024-10-16 |
+|   🚀   | **[Accelerate performance on inference]()**                                                  |    TBD     |
+|   🚀   | **[More funny showcase]()**                                                                  |    TBD     |
+
 ## 📝 Citation
 
 If you find our work useful for your research, please consider citing the paper:
 
 ```
 @misc{cui2024hallo2,
-	title={Hallo2: Long-Duration and High-Resolution Audio-driven Portrait Image Animation}, 
+	title={Hallo2: Long-Duration and High-Resolution Audio-driven Portrait Image Animation},
 	author={Jiahao Cui and Hui Li and Yao Yao and Hao Zhu and Hanlin Shang and Kaihui Cheng and Hang Zhou and Siyu Zhu and️ Jingdong Wang},
 	year={2024},
 	eprint={2410.07718},
@@ -380,4 +409,3 @@ Thank you to all the contributors who have helped to make this project better!
 <a href="https://github.com/fudan-generative-vision/hallo2/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=fudan-generative-vision/hallo2" />
 </a>
-
